@@ -102,22 +102,6 @@ Baseado no trabalho desenvolvido pelos alunos do semestre 2024/02:
 Inspirado no software **LogixPro Simulator**.
 ___________________________________________________________________________________________________
 
-Principais alterações desta versão (Release 2025):
-
-✨ Novas Funcionalidades:
-- Implementação completa da cena 'Traffic Light' (carros, semáforos, sensores indutivos e lógica de colisão).
-- Novo design para os popups de 'Ajuda' e 'Sobre' utilizando HTML/CSS modernos.
-
-🐛 Correções e Melhorias (Fixes):
-- Correção crítica na inicialização de memórias (M0, T, C): leitura antes de escrita não gera mais erro.
-- Otimização do Monitor de Variáveis (Data Table): atualização via 'upsert' elimina o piscar da tela.
-- Correção no reset visual dos displays numéricos ao parar a simulação.
-- Ajuste no parser para aceitar endereços com dígitos 0 e 9 corretamente.
-
-📝 Documentação:
-- Adicionados exemplos de código IL (Ex01 a Ex08) cobrindo lógica básica, timers, contadores e o novo semáforo.
-__________________________________________________________________________
-
 📦 Guia: Como Criar o Instalador Windows (.exe)
 Como o projeto é em Java, o build padrão gera um arquivo .jar. Para atender ao requisito do professor ("dispor de um instalador em ambiente Windows"), precisamos de dois passos:
 Transformar o .jar em um executável .exe (wrapper).
@@ -166,7 +150,6 @@ em ajuda:
 
 colocar outro video de explicação 
 
-colcoar o link dos exemplos prontos
 
 
 
