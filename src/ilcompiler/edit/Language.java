@@ -118,18 +118,22 @@ public class Language {
             case "EN" -> {
                 jComboBox.addItem("Panel (default)");
                 jComboBox.addItem("Batch Simulation");
+                jComboBox.addItem("Traffic Light"); // Adicionado
             }
             case "JA" -> {
                 jComboBox.addItem("パネル");
                 jComboBox.addItem("シミュレーション 1");
+                jComboBox.addItem("信号機"); // Adicionado
             }
             case "DE" -> {
                 jComboBox.addItem("Panel");
                 jComboBox.addItem("Simulation 1");
+                jComboBox.addItem("Ampel"); // Adicionado
             }
             default -> {
                 jComboBox.addItem("Painel (padrão)");
                 jComboBox.addItem("Simulação Batch");
+                jComboBox.addItem("Semáforo"); // Adicionado
             }
         }
         return jComboBox;

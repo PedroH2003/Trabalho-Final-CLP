@@ -2,7 +2,8 @@ package screens.scenes;
 
 public enum ScenesEnum {
     DEFAULT("Painel (padrão)"),
-    BATCH_SIMULATION("Simulação Batch");
+    BATCH_SIMULATION("Simulação Batch"),
+    TRAFFIC_LIGHT("Semáforo");
 
     private final String label;
 

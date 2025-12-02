@@ -37,6 +37,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import screens.scenes.ScenesEnum;
 import screens.scenes.InputEventListener;
+import screens.scenes.TrafficLightScenePanel; // Importar o novo painel
 
 public final class HomePg extends javax.swing.JFrame {
 
@@ -191,23 +192,29 @@ public final class HomePg extends javax.swing.JFrame {
 
         currentScene = scene;
 
+        // Remove o painel anterior
         if (currentScenePanel != null) {
             sceneContainer.remove((JPanel) currentScenePanel);
         }
 
+        // Seleciona o novo painel
         switch (scene) {
             case DEFAULT -> {
                 currentScenePanel = new DefaultScenePanel();
             }
             case BATCH_SIMULATION -> {
                 BatchSimulationScenePanel batchPanel = new BatchSimulationScenePanel();
-
                 batchPanel.setOnCriticalFailureCallback(() -> pauseBt.doClick());
-
                 currentScenePanel = batchPanel;
             }
+            // --- ADICIONE ESTE BLOCO ---
+            case TRAFFIC_LIGHT -> {
+                currentScenePanel = new TrafficLightScenePanel();
+            }
+            // ---------------------------
         }
 
+        // Inicializa inputs e adiciona o painel na tela
         currentScenePanel.initInputs(HomePageModel.getInputsType(), HomePageModel.getInputs());
 
         var currentSceneJPanel = (JPanel) currentScenePanel;
