@@ -85,13 +85,7 @@ O compilador suporta as instruções básicas da norma IEC 61131-3:
 
 ## ▶️ Como Executar
 
-1.  Baixe o arquivo `.jar` na aba [Releases] ou compile o código fonte.
-2.  Certifique-se de ter o **Java (JDK 22 ou superior)** instalado.
-3.  Execute o simulador.
-4.  Selecione o cenário desejado no menu "Simulação".
-5.  Escreva ou carregue um código IL.
-6.  Pressione **PLAY** ▶️.
-
+1.  Baixe o arquivo `Instalador_Simulador_CLP.exe`
 ---
 
 ## 📚 Referências e Créditos
@@ -100,57 +94,23 @@ Baseado no trabalho desenvolvido pelos alunos do semestre 2024/02:
 🔗 [Repositório Base (Diogo-NB)](https://github.com/Diogo-NB/SimuladorClp)
 
 Inspirado no software **LogixPro Simulator**.
-___________________________________________________________________________________________________
-
-📦 Guia: Como Criar o Instalador Windows (.exe)
-Como o projeto é em Java, o build padrão gera um arquivo .jar. Para atender ao requisito do professor ("dispor de um instalador em ambiente Windows"), precisamos de dois passos:
-Transformar o .jar em um executável .exe (wrapper).
-Empacotar esse .exe em um instalador (aquele com botão "Próximo > Próximo > Instalar").
-🛠️ Ferramentas Necessárias (Gratuitas)
-Launch4j: Para criar o executável. Baixar aqui
-Inno Setup: Para criar o instalador. Baixar aqui
-🔹 Passo 1: Criar o Executável (Launch4j)
-O objetivo aqui é fazer o programa abrir clicando duas vezes, com ícone próprio, sem parecer um arquivo Java solto.
-Abra o Launch4j.
-Na aba Basic:
-Output file: Escolha onde salvar e o nome (ex: SimuladorCLP.exe).
-Jar: Selecione o arquivo dist/SimuladorClp.jar do seu projeto.
-Icon: (Opcional) Selecione um arquivo .ico para ficar bonito (tem conversores online de png para ico).
-Na aba JRE:
-Min JRE version: Coloque a versão mínima (ex: 1.8.0 ou 22 dependendo de como compilou).
-Clique no ícone de engrenagem (Build wrapper).
-Resultado: Você terá um arquivo SimuladorCLP.exe. Teste se ele abre o programa.
-🔹 Passo 2: Criar o Instalador (Inno Setup)
-O objetivo é criar o arquivo Instalador_Simulador.exe que o professor vai usar para instalar o programa no computador dele.
-Abra o Inno Setup Compiler.
-Selecione "Create a new script file using the Script Wizard" (É o jeito mais fácil).
-Preencha os dados:
-Application Name: Simulador CLP
-Version: 2025.1
-Publisher: Seu Grupo
-Application Files:
-Application main executable file: Selecione o SimuladorCLP.exe que você criou no Passo 1.
-Add files: Clique aqui e adicione a pasta lib (onde está o AbsoluteLayout.jar) e a pasta examples (para o professor ter os exemplos). Isso é crucial para o programa funcionar.
-Continue clicando em "Next" (pode deixar as opções padrão de criar atalho na área de trabalho, etc).
-No final, clique em Finish e ele vai pedir para compilar o script. Diga Sim.
-Resultado: Ele vai gerar um arquivo (geralmente na pasta Output) chamado mysetup.exe (ou o nome que você definiu).
-✅ O que entregar para o professor?
-Quando ele pedir o instalador, você entrega apenas o arquivo final gerado pelo Inno Setup (ex: Instalador_Simulador_CLP.exe).
-Quando ele rodar esse arquivo:
-Vai abrir o assistente de instalação.
-Vai instalar o programa em Arquivos de Programas.
-Vai criar o atalho no Desktop.
-O programa vai rodar perfeitamente com todas as dependências inclusas.
-_______________________________________________________________________________
+_______________________________________________________
 
 
+ultikmas tarefas
 
-em ajuda:
-
-
-colocar outro video de explicação 
+colocar outro video de explicação pro robson
 
 
+colocar essas imagens
+
+### Tela Principal
+![Interface Principal](./docs/home_preview.png)
+*Interface principal com editor de código e painel de simulação.*
+
+### Nova Simulação: Semáforo
+![Semáforo](./docs/traffic_light_preview.png)
+*Novo cenário implementado para controle de tráfego.*
 
 
 
