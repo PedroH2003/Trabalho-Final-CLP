@@ -101,7 +101,7 @@ public class HelpPopUp {
         <div class="footer">
             🎥 <a href='https://www.youtube.com/watch?v=e-C53fbtbfo'>Vídeo Tutorial no YouTube</a> &nbsp;|&nbsp; 
             💻 <a href='https://github.com/PedroH2003/Trabalho-Final-CLP/tree/main/examples/Batch'>Baixar Exemplos Batch</a>
-            💻 <a href='https://github.com/Diogo-NB/SimuladorClp/tree/master/examples/Traffic-light'>Baixar Exemplos Traffic light</a>
+            💻 <a href='https://github.com/PedroH2003/Trabalho-Final-CLP/tree/main/examples/Traffic-light'>Baixar Exemplos Traffic light</a>
         </div>
     </body>
     </html>
