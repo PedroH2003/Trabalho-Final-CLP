@@ -1,115 +1,174 @@
 # 🤖 Simulador de CLP com Interface Interativa (Instruction List - IL)
 
 📚 **Disciplina:** Controladores Lógicos Programáveis (CLP)
-
 🎓 **Curso:** Engenharia de Computação
-
 🏫 **Instituição:** IFTM - Instituto Federal do Triângulo Mineiro
-
 📍 **Campus:** Uberaba - Parque Tecnológico
-
 👨‍🏫 **Professor:** Robson Rodrigues
 
 ---
 
-## 👥 Alunos
+## 🚀 Novidades da Versão 2025 (Current Release)
 
-- [Yuri David Silva Duarte](https://github.com/Boyuridod)
-- [Diogo Nunes Batista](https://github.com/Diogo-NB)
-- [José Ferreira Arantes Lopes](https://github.com/JoseArantes83)
-- [Vinícius Gabriel Ribeiro Barbosa](https://github.com/ViniciusGRBarbosa)
+Esta versão traz melhorias significativas de estabilidade e novas funcionalidades em relação ao projeto original:
 
----
+### ✨ Novas Funcionalidades
+1.  **🚦 Simulação de Semáforo (Traffic Light):**
+    *   Novo cenário interativo simulando um cruzamento real.
+    *   Controle de semáforos para carros (Norte-Sul e Leste-Oeste) e pedestres.
+    *   Sensores de presença indutiva no asfalto.
+    *   Sistema de detecção de colisão e falha crítica.
+2.  **📖 Interface de Ajuda Renovada:**
+    *   Pop-up de ajuda formatado em HTML/CSS para facilitar a leitura dos comandos.
+    *   Exemplos práticos de código embutidos na interface.
 
-## 📌 Descrição Geral do Projeto
-
-O projeto consiste na criação de um ambiente de simulação de um CLP (Controlador Lógico Programável) no computador, com interface interativa para operar as entradas e saídas disponíveis no simulador de processo industrial.
-
-O ambiente segue o ciclo de funcionamento de um CLP real e se inspira em simuladores existentes, como o LogixPro.
-
-O projeto se baseia na versão desenvolvida pelos alunos do semestre 2024/02, disponível neste repositório:
-🔗 [Repositório base no GitHub](https://github.com/IasminPieraco/Trabalho-Final-CLP)
-
----
-
-## 🛠️ Funcionalidades Obrigatórias
-
-## 📝 Lista de Instruções Suportadas (Instruction List - IL)
-
-- **LD:** Load – Carrega um valor para o acumulador.
-- **LDN:** Load Negado – Carrega um valor negado para o acumulador.
-- **ST:** Store – Armazena o conteúdo do acumulador no local especificado.
-- **STN:** Store Negado – Armazena o conteúdo negado do acumulador no local especificado.
-- **AND:** AND – Função booleana AND entre o operando indicado e o valor do acumulador.
-- **ANDN:** AND Negado – Função booleana AND entre o operando indicado negado e o valor do acumulador.
-- **OR:** OR – Função booleana OR entre o operando indicado e o valor do acumulador.
-- **ORN:** OR Negado – Função booleana OR entre o operando indicado negado e o valor do acumulador.
-- **TON:** Temporizador ON Delay – Ativa após um intervalo de tempo definido.
-- **TOF:** Temporizador OFF Delay – Desativa após um intervalo de tempo definido.
-- **CTU:** Count Up – Contador crescente.
-- **CTD:** Count Down – Contador decrescente.
-- **T1, T2, T3...:** Temporizadores – Referências aos temporizadores específicos.
-- **I0.0, I1.7, I1.0...:** Entradas – Endereços das entradas do sistema.
-- **Q0.1, Q1.7, Q1.0...:** Saídas – Endereços das saídas do sistema.
-- **M1, M2, M3...:** Memórias – Memórias booleanas locais disponíveis.
+### 🐛 Correções de Bugs e Melhorias (Fixes)
+*   **Monitor de Variáveis (Data Table):** Otimização completa da tabela. Agora ela atualiza em tempo real (`upsert`) sem recriar as linhas, eliminando o "piscar" da tela e melhorando a performance.
+*   **Correção de Memória (M0, T, C):** Corrigido bug onde memórias lidas antes de serem escritas causavam erro. Agora elas são auto-inicializadas.
+*   **Display de Numéricos:** Correção na limpeza visual dos displays de Temporizadores e Contadores ao reiniciar a simulação (botão Stop/Start).
+*   **Interpretador:** Melhoria no *parser* para identificar corretamente endereços de memória contendo dígitos 0 e 9.
 
 ---
 
-### ✅ Data Table (Tabela de Variáveis)
+## 👥 Desenvolvedores
 
-- Uma ferramenta para visualizar todas as variáveis do sistema
-  _(Inspirado na Data Table do LogixPro)_
+### 🔹 Grupo Atual (Desenvolvimento 2025)
+*   **Jamilly Moura**
+*   **Pedro Franco de Camargo**
+*   **Pedro Henrique Cândido Silva**
+
+### 📅 Membros do Grupo Anterior (2024/02)
+*   Diogo Nunes
+*   José Arantes
+*   Vinicius Barbosa
+*   Yuri Duarte
+
+*(O projeto é uma evolução contínua desenvolvida por diversas turmas do curso).*
+
+---
+
+## 🛠️ Funcionalidades Principais
+
+### 📝 Lista de Instruções Suportadas (IL)
+O compilador suporta as instruções básicas da norma IEC 61131-3:
+*   **Lógica:** `LD`, `LDN`, `ST`, `STN`, `AND`, `ANDN`, `OR`, `ORN`
+*   **Temporizadores:** `TON`, `TOF` (T1 a T10)
+*   **Contadores:** `CTU`, `CTD` (C1 a C10)
+*   **Endereçamento:**
+    *   Entradas: `I0.0` a `I1.7`
+    *   Saídas: `Q0.0` a `Q1.7`
+    *   Memórias Auxiliares: `M0`, `M1`...
 
 ### ✅ Modos de Operação
+*   🛠️ **PROGRAM:** Edição livre do código.
+*   ⏸️ **STOP:** Sistema parado, saídas resetadas.
+*   ▶️ **RUN:** Execução cíclica do programa (Scan Cycle).
 
-- 🛠️ **PROGRAM:** Permite edição do programa lógico, sem alterar saídas físicas.
-- ⏸️ **STOP:** Programa do usuário parado.
-- ▶️ **RUN:** Executa o programa lógico criado.
-
-### ✅ Ciclo de Varredura do CLP Simulado
-
-1. Inicializa o sistema
-2. Lê as entradas e armazena na memória imagem
-3. Processa o programa do usuário
-4. Atualiza as saídas com base na memória imagem de saída
-5. Retorna ao passo 2
-
-### ✅ Salvamento e Carregamento de Programas
-
-- Possibilidade de **salvar e carregar programas anteriores**
-
-### ✅ Linguagem de Programação da Lógica do CLP
-
-- **Instruction List (IL)**
-
-### ✅ Exemplos de Programas
-
-- 3 exemplos diferentes de código que utilizam:
-  - Operações lógicas
-  - Temporizadores
-  - Contadores
-
-### ✅ Instalador para Windows
-
-- O simulador deve dispor de um **instalador executável (.exe) para ambiente Windows**
+### ✅ Cenários de Simulação
+1.  **Painel Padrão:** Botões e LEDs genéricos para testes lógicos.
+2.  **Simulação Batch (Tanque):** Controle de nível, mistura e escoamento com animação de fluidos.
+3.  **Semáforo (Novo):** Controle de tráfego com carros animados e física básica de frenagem/colisão.
 
 ---
 
-## 🎨 Interface Interativa - Preview
+## 🎨 Interface do Usuário
 
-![Interface do Simulador](./docs/simulation_interface.png)
+### Tela Principal
+![Interface Principal](./docs/home_preview.png)
+*Interface principal com editor de código e painel de simulação.*
 
----
-
-## ▶️ Vídeo de Demonstração
-
-📺 Veja o simulador funcionando:
-👉 [Assista no YouTube](https://www.youtube.com/watch?v=Qdy83gkzqz0) - Simulador Inicial.
-👉 [Assista no YouTube](https://youtu.be/e-C53fbtbfo?si=Z7wWaaKLmnXStUDl) - Simulador Final.
+### Nova Simulação: Semáforo
+![Semáforo](./docs/traffic_light_preview.png)
+*Novo cenário implementado para controle de tráfego.*
 
 ---
 
-## 📚 Referências
+## ▶️ Como Executar
 
-- Projeto base: [https://github.com/IasminPieraco/Trabalho-Final-CLP](https://github.com/IasminPieraco/Trabalho-Final-CLP)
-- LogixPro Simulator: Referência visual
+1.  Baixe o arquivo `.jar` na aba [Releases] ou compile o código fonte.
+2.  Certifique-se de ter o **Java (JDK 22 ou superior)** instalado.
+3.  Execute o simulador.
+4.  Selecione o cenário desejado no menu "Simulação".
+5.  Escreva ou carregue um código IL.
+6.  Pressione **PLAY** ▶️.
+
+---
+
+## 📚 Referências e Créditos
+
+Baseado no trabalho desenvolvido pelos alunos do semestre 2024/02:
+🔗 [Repositório Base (Diogo-NB)](https://github.com/Diogo-NB/SimuladorClp)
+
+Inspirado no software **LogixPro Simulator**.
+___________________________________________________________________________________________________
+
+Principais alterações desta versão (Release 2025):
+
+✨ Novas Funcionalidades:
+- Implementação completa da cena 'Traffic Light' (carros, semáforos, sensores indutivos e lógica de colisão).
+- Novo design para os popups de 'Ajuda' e 'Sobre' utilizando HTML/CSS modernos.
+
+🐛 Correções e Melhorias (Fixes):
+- Correção crítica na inicialização de memórias (M0, T, C): leitura antes de escrita não gera mais erro.
+- Otimização do Monitor de Variáveis (Data Table): atualização via 'upsert' elimina o piscar da tela.
+- Correção no reset visual dos displays numéricos ao parar a simulação.
+- Ajuste no parser para aceitar endereços com dígitos 0 e 9 corretamente.
+
+📝 Documentação:
+- Adicionados exemplos de código IL (Ex01 a Ex08) cobrindo lógica básica, timers, contadores e o novo semáforo.
+__________________________________________________________________________
+
+📦 Guia: Como Criar o Instalador Windows (.exe)
+Como o projeto é em Java, o build padrão gera um arquivo .jar. Para atender ao requisito do professor ("dispor de um instalador em ambiente Windows"), precisamos de dois passos:
+Transformar o .jar em um executável .exe (wrapper).
+Empacotar esse .exe em um instalador (aquele com botão "Próximo > Próximo > Instalar").
+🛠️ Ferramentas Necessárias (Gratuitas)
+Launch4j: Para criar o executável. Baixar aqui
+Inno Setup: Para criar o instalador. Baixar aqui
+🔹 Passo 1: Criar o Executável (Launch4j)
+O objetivo aqui é fazer o programa abrir clicando duas vezes, com ícone próprio, sem parecer um arquivo Java solto.
+Abra o Launch4j.
+Na aba Basic:
+Output file: Escolha onde salvar e o nome (ex: SimuladorCLP.exe).
+Jar: Selecione o arquivo dist/SimuladorClp.jar do seu projeto.
+Icon: (Opcional) Selecione um arquivo .ico para ficar bonito (tem conversores online de png para ico).
+Na aba JRE:
+Min JRE version: Coloque a versão mínima (ex: 1.8.0 ou 22 dependendo de como compilou).
+Clique no ícone de engrenagem (Build wrapper).
+Resultado: Você terá um arquivo SimuladorCLP.exe. Teste se ele abre o programa.
+🔹 Passo 2: Criar o Instalador (Inno Setup)
+O objetivo é criar o arquivo Instalador_Simulador.exe que o professor vai usar para instalar o programa no computador dele.
+Abra o Inno Setup Compiler.
+Selecione "Create a new script file using the Script Wizard" (É o jeito mais fácil).
+Preencha os dados:
+Application Name: Simulador CLP
+Version: 2025.1
+Publisher: Seu Grupo
+Application Files:
+Application main executable file: Selecione o SimuladorCLP.exe que você criou no Passo 1.
+Add files: Clique aqui e adicione a pasta lib (onde está o AbsoluteLayout.jar) e a pasta examples (para o professor ter os exemplos). Isso é crucial para o programa funcionar.
+Continue clicando em "Next" (pode deixar as opções padrão de criar atalho na área de trabalho, etc).
+No final, clique em Finish e ele vai pedir para compilar o script. Diga Sim.
+Resultado: Ele vai gerar um arquivo (geralmente na pasta Output) chamado mysetup.exe (ou o nome que você definiu).
+✅ O que entregar para o professor?
+Quando ele pedir o instalador, você entrega apenas o arquivo final gerado pelo Inno Setup (ex: Instalador_Simulador_CLP.exe).
+Quando ele rodar esse arquivo:
+Vai abrir o assistente de instalação.
+Vai instalar o programa em Arquivos de Programas.
+Vai criar o atalho no Desktop.
+O programa vai rodar perfeitamente com todas as dependências inclusas.
+_______________________________________________________________________________
+
+
+
+em ajuda:
+
+
+colocar outro video de explicação 
+
+colcoar o link dos exemplos prontos
+
+
+
+
+

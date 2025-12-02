@@ -4,22 +4,26 @@ import Models.HomePageModel;
 import ilcompiler.memoryvariable.MemoryVariable;
 import java.awt.Color;
 import java.awt.Component;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
-import java.util.Map;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 public class ListaDeVariaveisPg extends javax.swing.JFrame {
 
     private JTable variablesTable;
     private DefaultTableModel tableModel;
+    
+    // Mapa para atualização rápida sem recriar a tabela (Correção do bug de atualização)
+    private final Map<String, Integer> rowMap = new HashMap<>();
 
     public ListaDeVariaveisPg() {
         initComponents();
@@ -39,22 +43,20 @@ public class ListaDeVariaveisPg extends javax.swing.JFrame {
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Impede edição direta das células
+                return false; // Impede edição direta
             }
         };
 
         variablesTable = new JTable(tableModel);
         
+        // --- VISUAL ORIGINAL RESTAURADO ---
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(tableModel);
         variablesTable.setRowSorter(sorter);
 
         List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        // A coluna 0 é o ID
         sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
-        sorter.sort();
         
-        // Renderizador para colorir o estado (verde para TRUE, vermelho para FALSE)
         variablesTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
             private final DefaultTableCellRenderer DEFAULT_RENDERER = new DefaultTableCellRenderer();
 
@@ -63,6 +65,7 @@ public class ListaDeVariaveisPg extends javax.swing.JFrame {
                 Component renderer = DEFAULT_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
                 if (column == 1 && value instanceof Boolean) {
+                    // Cores originais do seu projeto
                     renderer.setBackground((Boolean) value ? new Color(144, 238, 144) : new Color(255, 99, 71));
                     renderer.setForeground((Boolean) value ? Color.BLACK : Color.WHITE);
                 } else {
@@ -77,26 +80,44 @@ public class ListaDeVariaveisPg extends javax.swing.JFrame {
     }
 
     public void updateDataTable(Map<String, Boolean> inputs, Map<String, Boolean> outputs) {
-        tableModel.setRowCount(0); // Limpa todas as linhas
-
+        // Atualiza Entradas
         for (Map.Entry<String, Boolean> entry : inputs.entrySet()) {
-            tableModel.addRow(new Object[]{entry.getKey(), entry.getValue(), null, null, null}); // Adiciona ID e Estado com valores padrão para colunas restantes
+            upsertRow(entry.getKey(), entry.getValue(), null, null, null);
         }
+        // Atualiza Saídas
         for(Map.Entry<String, Boolean> entry : outputs.entrySet()){
-            tableModel.addRow(new Object[]{entry.getKey(), entry.getValue(), null, null, null});
+            upsertRow(entry.getKey(), entry.getValue(), null, null, null);
+        }
+        // Atualiza Memórias
+        for (Map.Entry<String, MemoryVariable> entry : HomePageModel.getMemoryVariables().entrySet()) {
+            String key = entry.getKey();
+            MemoryVariable mem = entry.getValue();
+            
+            if (key.startsWith("T")) {
+                upsertRow(key, mem.currentValue, mem.counter, mem.maxTimer, mem.endTimer);
+            } else if (key.startsWith("C")) {
+                upsertRow(key, null, mem.counter, mem.maxTimer, mem.endTimer);
+            } else {
+                upsertRow(key, mem.currentValue, null, null, null);
+            }
         }
         
-        for (Map.Entry<String, MemoryVariable> entry : HomePageModel.getMemoryVariables().entrySet()) {
-            switch (entry.getKey().charAt(0)) {
-                case 'T' -> {
-                    tableModel.addRow(new Object[]{entry.getKey(), entry.getValue().currentValue, 
-                        entry.getValue().counter, entry.getValue().maxTimer, entry.getValue().endTimer});
-                }
-                case 'C' -> {
-                    tableModel.addRow(new Object[]{entry.getKey(), "", entry.getValue().counter, 
-                        entry.getValue().maxTimer, entry.getValue().endTimer});
-                }
+        variablesTable.repaint();
+    }
+    
+    // Método para atualizar linha existente em vez de apagar tudo (Evita o piscar e falhas)
+    private void upsertRow(String id, Object val, Object count, Object preset, Object dn) {
+        if (rowMap.containsKey(id)) {
+            int rowIndex = rowMap.get(id);
+            if (rowIndex < tableModel.getRowCount()) {
+                tableModel.setValueAt(val, rowIndex, 1);
+                tableModel.setValueAt(count, rowIndex, 2);
+                tableModel.setValueAt(preset, rowIndex, 3);
+                tableModel.setValueAt(dn, rowIndex, 4);
             }
+        } else {
+            tableModel.addRow(new Object[]{id, val, count, preset, dn});
+            rowMap.put(id, tableModel.getRowCount() - 1);
         }
     }
 
@@ -107,7 +128,7 @@ public class ListaDeVariaveisPg extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         Lista_de_variaveis = new javax.swing.JTextArea();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         Lista_de_variaveis.setColumns(20);
         Lista_de_variaveis.setRows(5);

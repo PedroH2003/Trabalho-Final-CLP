@@ -6,36 +6,57 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.*;
 import java.util.Map;
-import java.util.Random;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 public class TrafficLightScenePanel extends JPanel implements IScenePanel {
 
-    // --- DEBUG (Mantive ligado para você conferir) ---
-    private final boolean SHOW_DEBUG_GRID = true; 
+    // --- DEBUG: DESLIGADO ---
+    private final boolean SHOW_DEBUG_GRID = false; 
     private int mouseX = 0;
     private int mouseY = 0;
 
     private InputEventListener inputListener;
     private Runnable onCriticalFailureCallback;
 
+    // Botões
     private final PushButton buttonPedestre1;
     private final PushButton buttonPedestre2;
+    
+    // Botões de Park Individuais
+    private final PushButton buttonParkBlue; // I0.4
+    private final PushButton buttonParkRed;  // I0.5
 
+    // Sliders de Velocidade
+    private final JSlider sliderSpeedBlue;
+    private final JSlider sliderSpeedRed;
+
+    // Estados dos Semáforos (Saídas do CLP)
     private boolean nsRed, nsYellow, nsGreen;
     private boolean ewRed, ewYellow, ewGreen;
+    private boolean pedLeftLight, pedRightLight; 
 
+    // Estados de Entrada (Botões)
     private boolean p1Pressed = false;
     private boolean p2Pressed = false;
+    private boolean parkBlueActive = false;
+    private boolean parkRedActive = false;
+
     private boolean isSimulating = false;
 
     private Timer animationTimer;
+    
+    // Progresso dos carros (0.0 a 100.0)
     private float carEW_Progress = 0f; 
     private float carNS_Progress = 0f;
+    
     private boolean crashOccurred = false;
+    
+    // Sensores
     private boolean carOnSensorEW = false;
     private boolean carOnSensorNS = false;
 
@@ -43,17 +64,21 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
     private final int W = 624;
     private final int H = 394;
     
-    // --- COORDENADAS FIXAS DOS SENSORES (Baseado nos seus círculos amarelos) ---
+    // Centro aproximado do cruzamento (para medir distância)
+    private final Point CENTER_POINT = new Point(312, 197);
+
+    // --- COORDENADAS FIXAS DOS SENSORES ---
     private final Point sensorLeftPos = new Point(270, 230);
     private final Point sensorRightPos = new Point(358, 227);
     
-    // Tamanho do Sensor (Dobrado/Grande para cobrir a faixa)
     private final int SENSOR_W = 100;
     private final int SENSOR_H = 45;
 
-    // Ângulo das ruas (Calculado para passar pelos sensores)
-    // A rua é uma diagonal. O ângulo é aprox 32 a 35 graus.
     private final double ROAD_ANGLE = Math.toRadians(34); 
+
+    // Posição da Torre
+    private final int TOWER_X = 312;
+    private final int TOWER_Y = 110;
 
     // Cores
     private static final Color GRASS_COLOR = new Color(34, 100, 34);
@@ -68,21 +93,72 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
         this.setPreferredSize(new Dimension(W, H));
         this.setSize(W, H);
 
+        // --- BOTÕES DE PEDESTRE ---
         buttonPedestre1 = new PushButton("I0.0", InputType.NO);
         buttonPedestre1.setBounds(230, 310, 40, 40);
 
         buttonPedestre2 = new PushButton("I0.1", InputType.NO);
         buttonPedestre2.setBounds(350, 310, 40, 40);
 
+        // --- CONTROLES LADO ESQUERDO (AZUL) ---
+        JLabel lblBlue = new JLabel("Carro Azul");
+        lblBlue.setForeground(Color.CYAN);
+        lblBlue.setFont(new Font("Arial", Font.BOLD, 12));
+        lblBlue.setBounds(20, 10, 100, 20);
+        this.add(lblBlue);
+
+        // Slider Azul
+        sliderSpeedBlue = new JSlider(0, 50, 15);
+        sliderSpeedBlue.setBounds(15, 30, 120, 20);
+        sliderSpeedBlue.setOpaque(false);
+        this.add(sliderSpeedBlue);
+
+        // Botão Park Azul
+        buttonParkBlue = new PushButton("I0.4", InputType.SWITCH); 
+        buttonParkBlue.setBounds(45, 55, 60, 40);
+        JLabel lblParkBlue = new JLabel("PARK (I0.4)");
+        lblParkBlue.setForeground(Color.WHITE);
+        lblParkBlue.setFont(new Font("Arial", Font.PLAIN, 10));
+        lblParkBlue.setBounds(45, 95, 80, 15);
+        this.add(lblParkBlue);
+
+
+        // --- CONTROLES LADO DIREITO (VERMELHO) ---
+        int rightMarginX = W - 140;
+
+        JLabel lblRed = new JLabel("Carro Vermelho");
+        lblRed.setForeground(new Color(255, 100, 100)); // Vermelho claro
+        lblRed.setFont(new Font("Arial", Font.BOLD, 12));
+        lblRed.setBounds(rightMarginX, 10, 120, 20);
+        this.add(lblRed);
+
+        // Slider Vermelho
+        sliderSpeedRed = new JSlider(0, 50, 15);
+        sliderSpeedRed.setBounds(rightMarginX - 5, 30, 120, 20);
+        sliderSpeedRed.setOpaque(false);
+        this.add(sliderSpeedRed);
+
+        // Botão Park Vermelho
+        buttonParkRed = new PushButton("I0.5", InputType.SWITCH, PushButton.ButtonPalette.RED);
+        buttonParkRed.setBounds(rightMarginX + 25, 55, 60, 40);
+        JLabel lblParkRed = new JLabel("PARK (I0.5)");
+        lblParkRed.setForeground(Color.WHITE);
+        lblParkRed.setFont(new Font("Arial", Font.PLAIN, 10));
+        lblParkRed.setBounds(rightMarginX + 25, 95, 80, 15);
+        this.add(lblParkRed);
+
+
+        // Adiciona botões ao painel
         this.add(buttonPedestre1);
         this.add(buttonPedestre2);
+        this.add(buttonParkBlue);
+        this.add(buttonParkRed);
 
+        // Habilita listener do mouse (apenas se precisar reativar debug futuramente)
         if (SHOW_DEBUG_GRID) {
             this.addMouseMotionListener(new MouseMotionListener() {
-                @Override public void mouseDragged(MouseEvent e) {}
-                @Override public void mouseMoved(MouseEvent e) {
-                    mouseX = e.getX(); mouseY = e.getY(); repaint();
-                }
+                @Override public void mouseDragged(MouseEvent e) { mouseX = e.getX(); mouseY = e.getY(); repaint(); }
+                @Override public void mouseMoved(MouseEvent e) { mouseX = e.getX(); mouseY = e.getY(); repaint(); }
             });
         }
 
@@ -94,40 +170,99 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
     }
 
     private void updateCars() {
-        // Ponto de parada calculado: O carro deve parar quando chegar perto do sensor (aprox 30% do trajeto)
-        // Azul (EW)
-        float stopEW = 26f;
-        boolean atStopEW = (carEW_Progress > stopEW - 1 && carEW_Progress < stopEW + 1);
-        boolean canGoEW = ewGreen || (ewYellow && carEW_Progress > stopEW) || (carEW_Progress > stopEW + 10);
+        
+        // ==================================================================================
+        // CARRO AZUL (Leste-Oeste / EW) -> OBEDECE 'ewRed' (Q0.0)
+        // ==================================================================================
+        if (parkBlueActive) {
+            float speedBlue = sliderSpeedBlue.getValue() / 10.0f;
+            float stopEW = 25f; 
+            
+            boolean shouldStop = ewRed && !ewGreen; 
+            
+            float nextPos = carEW_Progress + speedBlue;
 
-        if (atStopEW && !canGoEW) carOnSensorEW = true;
-        else {
-            carEW_Progress += 0.6f;
-            if (!atStopEW) carOnSensorEW = false;
+            // --- Lógica de Movimento ---
+            if (carEW_Progress < stopEW && nextPos >= stopEW) {
+                if (shouldStop) {
+                    carEW_Progress = stopEW; // Para na linha
+                } else {
+                    carEW_Progress = nextPos; // Continua
+                }
+            } else {
+                if (Math.abs(carEW_Progress - stopEW) < 0.1f && shouldStop) {
+                    // Mantém parado
+                } else {
+                    carEW_Progress = nextPos; // Move normal
+                }
+            }
+
+            // Loop Infinito
+            if (carEW_Progress > 100f) {
+                carEW_Progress = 0f;
+            }
+            
+            // --- Lógica do Sensor I0.2 (I:1/02) ---
+            // Sensor de presença: ativo entre 25% e 39%
+            if (carEW_Progress >= 25.0f && carEW_Progress <= 39.0f) {
+                carOnSensorEW = true;
+            } else {
+                carOnSensorEW = false;
+            }
         }
-        if (carEW_Progress > 100f) carEW_Progress = 0f;
 
-        // Vermelho (NS)
-        float stopNS = 28f;
-        boolean atStopNS = (carNS_Progress > stopNS - 1 && carNS_Progress < stopNS + 1);
-        boolean canGoNS = nsGreen || (nsYellow && carNS_Progress > stopNS) || (carNS_Progress > stopNS + 10);
+        // ==================================================================================
+        // CARRO VERMELHO (Norte-Sul / NS) -> OBEDECE 'nsRed' (Q0.4)
+        // ==================================================================================
+        if (parkRedActive) {
+            float speedRed = sliderSpeedRed.getValue() / 10.0f;
+            float stopNS = 27f;
+            
+            boolean shouldStop = nsRed && !nsGreen;
+            
+            float nextPos = carNS_Progress + speedRed;
 
-        if (atStopNS && !canGoNS) carOnSensorNS = true;
-        else {
-            carNS_Progress += 0.6f;
-            if (!atStopNS) carOnSensorNS = false;
+            // --- Lógica de Movimento ---
+            if (carNS_Progress < stopNS && nextPos >= stopNS) {
+                if (shouldStop) {
+                    carNS_Progress = stopNS; // Para na linha
+                } else {
+                    carNS_Progress = nextPos; // Continua
+                }
+            } else {
+                if (Math.abs(carNS_Progress - stopNS) < 0.1f && shouldStop) {
+                    // Mantém parado
+                } else {
+                    carNS_Progress = nextPos; // Move normal
+                }
+            }
+
+            // Loop Infinito
+            if (carNS_Progress > 100f) {
+                carNS_Progress = 0f;
+            }
+            
+            // --- Lógica do Sensor I0.3 (I:1/03) ---
+            // Sensor de presença: ativo entre 27% e 41%
+            if (carNS_Progress >= 27.0f && carNS_Progress <= 41.0f) {
+                carOnSensorNS = true;
+            } else {
+                carOnSensorNS = false;
+            }
         }
-        if (carNS_Progress > 100f) carNS_Progress = 0f;
 
-        // Colisão (Centro)
-        if (carEW_Progress > 45 && carEW_Progress < 55 && carNS_Progress > 45 && carNS_Progress < 55) handleCrash();
+        // --- COLISÃO CALIBRADA ---
+        if (carEW_Progress > 38.0f && carEW_Progress < 50.0f && 
+            carNS_Progress > 33.5f && carNS_Progress < 44.0f) {
+            handleCrash();
+        }
     }
 
     private void handleCrash() {
         crashOccurred = true;
         repaint();
         SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(this, "COLISÃO!", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "COLISÃO! Ocorreu um acidente no cruzamento.", "Falha Crítica", JOptionPane.ERROR_MESSAGE);
             if (onCriticalFailureCallback != null) onCriticalFailureCallback.run();
             stop();
         });
@@ -135,23 +270,35 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
 
     @Override
     public void initInputs(Map<String, InputType> inputsType, Map<String, Boolean> inputs) {
-        inputsType.put("I0.0", InputType.NO); inputs.put("I0.0", false);
-        inputsType.put("I0.1", InputType.NO); inputs.put("I0.1", false);
-        inputsType.put("I0.2", InputType.NO); inputs.put("I0.2", false);
-        inputsType.put("I0.3", InputType.NO); inputs.put("I0.3", false);
+        inputsType.put("I0.0", InputType.NO); inputs.put("I0.0", false); 
+        inputsType.put("I0.1", InputType.NO); inputs.put("I0.1", false); 
+        inputsType.put("I0.2", InputType.NO); inputs.put("I0.2", false); 
+        inputsType.put("I0.3", InputType.NO); inputs.put("I0.3", false); 
+        inputsType.put("I0.4", InputType.SWITCH); inputs.put("I0.4", false); 
+        inputsType.put("I0.5", InputType.SWITCH); inputs.put("I0.5", false); 
     }
 
     @Override
     public void updateUIState(Map<String, InputType> inputsType, Map<String, Boolean> inputs, Map<String, Boolean> outputs) {
         isSimulating = true;
-        nsRed = outputs.getOrDefault("Q0.0", false);
-        nsYellow = outputs.getOrDefault("Q0.1", false);
-        nsGreen = outputs.getOrDefault("Q0.2", false);
-        ewRed = outputs.getOrDefault("Q0.3", false);
-        ewYellow = outputs.getOrDefault("Q0.4", false);
-        ewGreen = outputs.getOrDefault("Q0.5", false);
+        
+        ewRed    = outputs.getOrDefault("Q0.0", false);
+        ewYellow = outputs.getOrDefault("Q0.1", false);
+        ewGreen  = outputs.getOrDefault("Q0.2", false);
+        
+        pedLeftLight = outputs.getOrDefault("Q0.3", false); 
+        
+        nsRed    = outputs.getOrDefault("Q0.4", false);
+        nsYellow = outputs.getOrDefault("Q0.5", false);
+        nsGreen  = outputs.getOrDefault("Q0.6", false);
+        
+        pedRightLight = outputs.getOrDefault("Q0.7", false);
+        
         p1Pressed = inputs.getOrDefault("I0.0", false);
         p2Pressed = inputs.getOrDefault("I0.1", false);
+        parkBlueActive = inputs.getOrDefault("I0.4", false);
+        parkRedActive = inputs.getOrDefault("I0.5", false);
+
         inputs.put("I0.2", carOnSensorEW);
         inputs.put("I0.3", carOnSensorNS);
     }
@@ -160,10 +307,16 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
     public void resetUIState() {
         nsRed = nsYellow = nsGreen = false;
         ewRed = ewYellow = ewGreen = false;
+        pedLeftLight = pedRightLight = false;
         p1Pressed = p2Pressed = false;
-        carEW_Progress = 0f; carNS_Progress = 0f;
-        carOnSensorEW = false; carOnSensorNS = false;
-        crashOccurred = false; isSimulating = false;
+        
+        carEW_Progress = 0f; 
+        carNS_Progress = 0f;
+        carOnSensorEW = false; 
+        carOnSensorNS = false;
+        
+        crashOccurred = false; 
+        isSimulating = false;
         repaint();
     }
 
@@ -171,6 +324,8 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
         this.inputListener = l; 
         buttonPedestre1.setInputEventListener(l); 
         buttonPedestre2.setInputEventListener(l); 
+        buttonParkBlue.setInputEventListener(l);
+        buttonParkRed.setInputEventListener(l);
     }
     @Override public void setOnCriticalFailureCallback(Runnable r) { this.onCriticalFailureCallback = r; }
     @Override public void stop() { isSimulating = false; }
@@ -183,35 +338,66 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
 
         drawGrass(g2);
         drawRoads(g2);
-
-        // --- DESENHAR SENSORES E FAIXAS NAS POSIÇÕES FIXAS ---
         
-        drawLaneFeature(g2, sensorLeftPos.x, sensorLeftPos.y, true, carOnSensorEW);
+        // DEBUG: Zonas de Colisão (Onde os carros batem)
+        if (SHOW_DEBUG_GRID) {
+             drawCrashZones(g2);
+        }
 
-       
-        drawLaneFeature(g2, sensorRightPos.x, sensorRightPos.y, false, carOnSensorNS);
+        // Sensores
+        drawLaneFeature(g2, sensorLeftPos.x, sensorLeftPos.y, true);
+        drawLaneFeature(g2, sensorRightPos.x, sensorRightPos.y, false);
 
-        // --- CARROS ---
+        // Carros
         drawCars(g2);
 
-        if (crashOccurred) drawExplosion(g2);
+        // Torre Central
+        drawCentralTower(g2, TOWER_X, TOWER_Y);
 
-        // Torre (deslocada para cima para não tapar o cruzamento)
-        drawCentralTower(g2, 312, 140);
-        drawPedestrianPosts(g2);
+        // Sinais de Pedestre
+        drawPedestrianSignals(g2);
+
+        // Decoração dos Botões (Setas VERMELHAS Rotacionadas e Menores)
+        drawButtonDecorations(g2);
+
+        // Labels
         drawLabels(g2);
         
-        if (SHOW_DEBUG_GRID) drawDebugGrid(g2);
+        // Explosão (Topo)
+        if (crashOccurred) drawExplosion(g2);
+        
+        if (SHOW_DEBUG_GRID) drawDebugOverlay(g2);
     }
     
-    private void drawDebugGrid(Graphics2D g2) {
-        g2.setColor(new Color(0, 255, 0, 50));
-        for (int i = 0; i < W; i+=50) g2.drawLine(i, 0, i, H);
-        for (int i = 0; i < H; i+=50) g2.drawLine(0, i, W, i);
-        g2.setColor(Color.BLACK); g2.fillRect(5, 5, 130, 25);
-        g2.setColor(Color.YELLOW); g2.setFont(new Font("Arial", Font.BOLD, 14));
-        g2.drawString("X: " + mouseX + " Y: " + mouseY, 10, 22);
-        g2.setColor(Color.RED); g2.drawLine(mouseX - 5, mouseY, mouseX + 5, mouseY); g2.drawLine(mouseX, mouseY - 5, mouseX, mouseY + 5);
+    // --- MÉTODOS DE VISUALIZAÇÃO DEBUG (Desativados por flag) ---
+    private void drawDebugOverlay(Graphics2D g2) {
+        // Mira do Mouse
+        g2.setColor(new Color(255, 255, 255, 100));
+        g2.setStroke(new BasicStroke(1));
+        g2.drawLine(0, mouseY, W, mouseY);
+        g2.drawLine(mouseX, 0, mouseX, H);
+
+        // Coordenadas Mouse
+        String mouseCoords = "MOUSE X: " + mouseX + " Y: " + mouseY;
+        g2.setColor(Color.BLACK);
+        g2.fillRect(mouseX + 10, mouseY + 10, 140, 20);
+        g2.setColor(Color.YELLOW);
+        g2.setFont(new Font("Monospaced", Font.BOLD, 12));
+        g2.drawString(mouseCoords, mouseX + 15, mouseY + 24);
+        
+        // Centro do Cruzamento
+        g2.setColor(Color.MAGENTA);
+        g2.fillOval(CENTER_POINT.x - 3, CENTER_POINT.y - 3, 6, 6);
+    }
+    
+    private void drawCrashZones(Graphics2D g2) {
+        g2.setColor(new Color(0, 0, 255, 50)); // Zona Azul
+        g2.fillOval(250, 180, 100, 60); 
+        g2.setColor(new Color(255, 0, 0, 50)); // Zona Vermelha
+        g2.fillOval(280, 160, 60, 100);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.PLAIN, 10));
+        g2.drawString("CRASH ZONE", 280, 200);
     }
 
     private void drawGrass(Graphics2D g2) {
@@ -221,7 +407,6 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
 
     private void drawRoads(Graphics2D g2) {
         int roadW = 150;
-        // As ruas são desenhadas baseadas na diagonal do painel
         Polygon roadEW = new Polygon();
         roadEW.addPoint(0, 0); roadEW.addPoint(roadW, 0);
         roadEW.addPoint(W, H); roadEW.addPoint(W - roadW, H);
@@ -241,49 +426,36 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
         g2.drawLine(W - roadW / 2, 0, roadW / 2, H);
     }
 
-    /**
-     * Desenha o sensor (fundo) e as listras (faixa) juntos, usando rotação.
-     */
-    private void drawLaneFeature(Graphics2D g2, int cx, int cy, boolean isBlueRoad, boolean active) {
+    private void drawLaneFeature(Graphics2D g2, int cx, int cy, boolean isBlueRoad) {
         AffineTransform old = g2.getTransform();
         g2.translate(cx, cy);
         
-        // Ângulo: 
-        // Esquerda (Blue): ROAD_ANGLE
-        // Direita (Red): -ROAD_ANGLE
         double angle;
-
-        if (isBlueRoad) {
-            // --- LADO ESQUERDO (SENSOR AZUL) ---
-            // Mude o '0' para girar.
-            // Positivo (+) gira Horário. Negativo (-) gira Anti-Horário.
-            angle = ROAD_ANGLE + Math.toRadians(12); 
-        } else {
-            // --- LADO DIREITO (SENSOR VERMELHO) ---
-            // Mude o '0' para girar.
-            // Tente valores como 10, -10, 20...
-            angle = -ROAD_ANGLE + Math.toRadians(-12); 
-        }
+        if (isBlueRoad) angle = ROAD_ANGLE + Math.toRadians(12); 
+        else            angle = -ROAD_ANGLE + Math.toRadians(-12); 
+        
         g2.rotate(angle);
 
-        int w = SENSOR_W; // 100
-        int h = SENSOR_H; // 45
+        int w = SENSOR_W; 
+        int h = SENSOR_H; 
         
-        // Centraliza o retângulo na coordenada do mouse/ponto fixo
         int lx = -w / 2;
-        int ly = 8; // Offset para alinhar na pista da direita (abaixo da linha branca no eixo local)
+        int ly = 8; 
         
-        // 1. Fundo do Sensor (Amarelo ou Cinza)
-        if (active) g2.setColor(new Color(255, 255, 0, 180)); 
-        else g2.setColor(new Color(100, 100, 100, 80)); 
+        // Indicador Visual do Sensor (Aceso/Apagado)
+        boolean sensorActive = isBlueRoad ? carOnSensorEW : carOnSensorNS;
+        
+        if (sensorActive) {
+            g2.setColor(new Color(255, 255, 0, 150)); // Amarelo se ativo
+        } else {
+            g2.setColor(new Color(100, 100, 100, 80)); // Cinza se inativo
+        }
         g2.fillRect(lx, ly, w, h);
         
-        // Borda
-        g2.setColor(active ? Color.YELLOW : Color.DARK_GRAY);
+        g2.setColor(Color.DARK_GRAY);
         g2.setStroke(new BasicStroke(2));
         g2.drawRect(lx, ly, w, h);
 
-        // 2. Listras (Zebras)
         g2.setColor(Color.WHITE);
         int stripes = 6; 
         int stripW = (w / stripes) - 4; 
@@ -291,15 +463,12 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
             g2.fillRect(lx + 4 + (i * (w / stripes)), ly + 2, stripW, h - 4);
         }
         
-        // 3. Linha de Pare
         g2.setStroke(new BasicStroke(5));
         g2.drawLine(lx - 5, ly, lx - 5, ly + h);
 
-        // 4. Label ID (Des-rotacionada)
         g2.rotate(-angle); 
         g2.setColor(Color.BLACK); 
         g2.setFont(new Font("Arial", Font.BOLD, 12));
-        // Ajuste manual para o texto ficar legível
         if (isBlueRoad) g2.drawString("I:1/02", -20, 50);
         else            g2.drawString("I:1/03", -30, 50);
 
@@ -307,43 +476,58 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
     }
 
     private void drawCars(Graphics2D g2) {
-        // Definir os vetores de movimento baseados no tamanho da tela e offsets
-        // Pista Azul: (Esquerda-Baixo -> Direita-Cima).
-        // Ajuste de X e Y para alinhar com o centro da pista da direita.
-        // O ROAD_ANGLE é ~34 graus. 
-        // Offset perpendicular: ~35px.
-        
-        // Calculo vetorial simplificado:
+        // --- Carro Azul ---
         double startX_B = -100; double startY_B = H + 63; 
         double endX_B = W + 0; double endY_B = -140;
         
-        // Azul
         double curX_B = startX_B + (endX_B - startX_B) * (carEW_Progress / 100.0);
         double curY_B = startY_B + (endY_B - startY_B) * (carEW_Progress / 100.0);
         
-        // Offset lateral manual para encaixar na pista
         double blueOffsetX = 110;
         double blueOffsetY = -30; 
+        
+        int drawX_B = (int)(curX_B + blueOffsetX);
+        int drawY_B = (int)(curY_B + blueOffsetY);
 
         if (carEW_Progress > 0 && carEW_Progress < 100) {
-            // Ângulo negativo pois Y diminui
-            drawRotatedCar(g2, (int)(curX_B + blueOffsetX), (int)(curY_B + blueOffsetY), Color.BLUE, -ROAD_ANGLE- Math.toRadians(5));
+            drawRotatedCar(g2, drawX_B, drawY_B, Color.BLUE, -ROAD_ANGLE - Math.toRadians(5));
+            
+            // DEBUG INFO AZUL (Oculto)
+            if (SHOW_DEBUG_GRID) {
+                g2.setColor(Color.CYAN);
+                g2.drawLine(drawX_B, drawY_B, CENTER_POINT.x, CENTER_POINT.y);
+                double dist = Point2D.distance(drawX_B, drawY_B, CENTER_POINT.x, CENTER_POINT.y);
+                String info = String.format("Pos[%d,%d] Prog:%.1f%% Dist:%dpx", drawX_B, drawY_B, carEW_Progress, (int)dist);
+                g2.setFont(new Font("Arial", Font.BOLD, 11));
+                g2.drawString(info, drawX_B - 60, drawY_B - 20);
+            }
         }
 
-        // Vermelho (Direita-Baixo -> Esquerda-Cima)
+        // --- Carro Vermelho ---
         double startX_R = W + 100; double startY_R = H + 63;
         double endX_R = 0; double endY_R = -140;
         
         double curX_R = startX_R + (endX_R - startX_R) * (carNS_Progress / 100.0);
         double curY_R = startY_R + (endY_R - startY_R) * (carNS_Progress / 100.0);
 
-        // Offset lateral manual
         double redOffsetX = -110;
         double redOffsetY = 0;
+        
+        int drawX_R = (int)(curX_R + redOffsetX);
+        int drawY_R = (int)(curY_R + redOffsetY);
 
         if (carNS_Progress > 0 && carNS_Progress < 100) {
-            // Ângulo: 180 graus + ROAD_ANGLE
-            drawRotatedCar(g2, (int)(curX_R + redOffsetX), (int)(curY_R + redOffsetY), Color.RED, Math.PI + ROAD_ANGLE+Math.toRadians(5));
+            drawRotatedCar(g2, drawX_R, drawY_R, Color.RED, Math.PI + ROAD_ANGLE + Math.toRadians(5));
+            
+            // DEBUG INFO VERMELHO (Oculto)
+            if (SHOW_DEBUG_GRID) {
+                g2.setColor(Color.PINK);
+                g2.drawLine(drawX_R, drawY_R, CENTER_POINT.x, CENTER_POINT.y);
+                double dist = Point2D.distance(drawX_R, drawY_R, CENTER_POINT.x, CENTER_POINT.y);
+                String info = String.format("Pos[%d,%d] Prog:%.1f%% Dist:%dpx", drawX_R, drawY_R, carNS_Progress, (int)dist);
+                g2.setFont(new Font("Arial", Font.BOLD, 11));
+                g2.drawString(info, drawX_R + 20, drawY_R - 20);
+            }
         }
     }
 
@@ -353,8 +537,7 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
         g2.rotate(angle);
         
         int w = 55; int h = 28;
-        // Desenha centralizado no eixo Y local mas deslocado no eixo Y (faixa)
-        int carY = 35 - (h/2); // Offset 35 da linha central
+        int carY = 35 - (h/2); 
         
         g2.setColor(c);
         g2.fillRoundRect(-w/2, carY, w, h, 8, 8);
@@ -371,17 +554,28 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
         g2.fillOval(w/2 - 5, carY + 3, 4, 4);
         g2.fillOval(w/2 - 5, carY + h - 7, 4, 4);
         
+        // Ponto central do carro para debug (Oculto)
+        if (SHOW_DEBUG_GRID) {
+            g2.setColor(Color.WHITE);
+            g2.fillRect(-2, carY + h/2 - 2, 4, 4);
+        }
+        
         g2.setTransform(old);
     }
 
     private void drawExplosion(Graphics2D g2) {
+        int cx = 312; 
+        int cy = 200; 
+        g2.setColor(new Color(255, 69, 0, 220)); 
+        g2.fillOval(cx-50, cy-40, 100, 80); 
         g2.setColor(Color.ORANGE);
-        g2.fillOval(312-40, 140-10, 80, 60); 
-        g2.setColor(Color.RED);
-        g2.fillOval(312-20, 140, 40, 30);
+        g2.fillOval(cx-30, cy-25, 60, 50);
         g2.setColor(Color.YELLOW);
-        g2.setFont(new Font("Arial", Font.BOLD, 20));
-        g2.drawString("CRASH!", 312-35, 140+25);
+        g2.setFont(new Font("Arial Black", Font.BOLD, 26));
+        g2.drawString("CRASH!", cx-55, cy+10);
+        g2.setStroke(new BasicStroke(3));
+        g2.setColor(Color.BLACK);
+        g2.drawOval(cx-50, cy-40, 100, 80);
     }
 
     private void drawCentralTower(Graphics2D g2, int x, int y) {
@@ -398,12 +592,15 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
         g2.setColor(BOX_SHADE); g2.fillPolygon(rx, ry, 4); g2.setColor(Color.BLACK); g2.drawPolygon(rx, ry, 4);
         g2.setColor(BOX_COLOR); g2.fillPolygon(lx, ly, 4); g2.setColor(Color.BLACK); g2.drawPolygon(lx, ly, 4);
 
-        drawLight(g2, x - 45, y - 95, nsRed, Color.RED);
-        drawLight(g2, x - 45, y - 60, nsYellow, Color.YELLOW);
-        drawLight(g2, x - 45, y - 25, nsGreen, Color.GREEN);
-        drawLight(g2, x + 15, y - 95, ewRed, Color.RED);
-        drawLight(g2, x + 15, y - 60, ewYellow, Color.YELLOW);
-        drawLight(g2, x + 15, y - 25, ewGreen, Color.GREEN);
+        // Lado Esquerdo (Blue/EW) -> ew...
+        drawLight(g2, x - 45, y - 95, ewRed, Color.RED);
+        drawLight(g2, x - 45, y - 60, ewYellow, Color.YELLOW);
+        drawLight(g2, x - 45, y - 25, ewGreen, Color.GREEN);
+        
+        // Lado Direito (Red/NS) -> ns...
+        drawLight(g2, x + 15, y - 95, nsRed, Color.RED);
+        drawLight(g2, x + 15, y - 60, nsYellow, Color.YELLOW);
+        drawLight(g2, x + 15, y - 25, nsGreen, Color.GREEN);
     }
 
     private void drawLight(Graphics2D g2, int x, int y, boolean on, Color c) {
@@ -413,35 +610,107 @@ public class TrafficLightScenePanel extends JPanel implements IScenePanel {
         g2.setStroke(new BasicStroke(1)); g2.drawOval(x, y, 30, 30);
     }
 
-    private void drawPedestrianPosts(Graphics2D g2) {
-        drawPostShape(g2, 230, 310, p1Pressed);
-        drawPostShape(g2, 350, 310, p2Pressed);
+    private void drawPedestrianSignals(Graphics2D g2) {
+        drawSignalPost(g2, 160, 240, pedLeftLight, "O:2/03");
+        drawSignalPost(g2, 465, 240, pedRightLight, "O:2/07");
     }
 
-    private void drawPostShape(Graphics2D g2, int x, int y, boolean pressed) {
+    private void drawSignalPost(Graphics2D g2, int x, int y, boolean active, String label) {
+        // 1. O Poste
+        g2.setColor(Color.BLACK);
+        g2.fillRect(x - 6, y - 60, 12, 60);
+
+        // 2. A Caixa do sinal (80x50)
         g2.setColor(Color.GRAY);
-        g2.fillRect(x - 5, y - 50, 10, 50);
-        g2.setColor(Color.DARK_GRAY);
-        g2.fill3DRect(x - 20, y - 80, 40, 30, true);
-        g2.setFont(new Font("Arial", Font.BOLD, 9));
-        g2.setColor(Color.RED);
-        g2.drawString("DONT", x - 12, y - 68);
-        g2.setColor(Color.WHITE);
-        g2.drawString("WALK", x - 12, y - 58);
-        g2.setColor(pressed ? Color.CYAN : Color.RED);
-        int[] ax = {x, x + 10, x + 10, x + 20, x + 10, x + 10, x};
-        int[] ay = {y - 10, y - 10, y - 15, y - 5, y + 5, y, y};
-        g2.fillPolygon(ax, ay, 7);
+        g2.fill3DRect(x - 40, y - 110, 80, 50, true);
+
+        // 3. Configuração do Texto
+        g2.setFont(new Font("Monospaced", Font.BOLD, 20));
+
+        if (active) g2.setColor(new Color(255, 140, 0)); // Texto Laranja Aceso
+        else        g2.setColor(new Color(60, 20, 0));   // Texto Apagado
+
+        // Texto "DONT" (Subi um pouco para -85 para caber a bolinha em baixo)
+        g2.drawString("DONT", x - 25, y - 85);
+
+        // --- NOVA PARTE: A BOLINHA VERMELHA ---
+        if (active) {
+            g2.setColor(Color.RED); // Vermelho vivo quando ativo
+        } else {
+            g2.setColor(new Color(40, 0, 0)); // Vermelho muito escuro (apagado)
+        }
+        
+        // Desenha a bolinha centralizada abaixo do texto
+        // x - 6 (para centralizar uma bolinha de 12px)
+        // y - 78 (posição vertical logo abaixo do texto)
+        g2.fillOval(x - 6, y - 78, 12, 12);
+        
+        // Borda preta fina na bolinha para acabamento
+        g2.setColor(Color.BLACK);
+        g2.setStroke(new BasicStroke(1));
+        g2.drawOval(x - 6, y - 78, 12, 12);
+        // --------------------------------------
+
+        // 4. Label Lateral (Endereço da Saída)
+        g2.setColor(Color.BLACK);
+        g2.setFont(new Font("SansSerif", Font.BOLD, 12));
+        g2.drawString(label, x + 45, y - 90);
+    }
+    
+    private void drawButtonDecorations(Graphics2D g2) {
+        drawRotatedArrow(g2, 250, 290, true, p1Pressed);
+        drawRotatedArrow(g2, 370, 290, false, p2Pressed);
+    }
+
+    private void drawRotatedArrow(Graphics2D g2, int x, int y, boolean isLeftButton, boolean isPressed) {
+        AffineTransform old = g2.getTransform();
+        g2.translate(x, y);
+        
+        double angle = isLeftButton ? Math.toRadians(-45) : Math.toRadians(45);
+        g2.rotate(angle);
+        
+        Polygon arrow = new Polygon();
+        int w = 8; 
+        int h = 10; 
+        int stemW = 4; 
+        int stemH = 10; 
+        
+        // Ponta
+        arrow.addPoint(0, -h - stemH); 
+        arrow.addPoint(-w, -stemH);
+        arrow.addPoint(-stemW, -stemH);
+        arrow.addPoint(-stemW, stemH);
+        arrow.addPoint(stemW, stemH);
+        arrow.addPoint(stemW, -stemH);
+        arrow.addPoint(w, -stemH);
+        
+        if (isPressed) {
+            g2.setColor(Color.CYAN); // Brilhando
+        } else {
+            g2.setColor(new Color(200, 0, 0)); // Vermelho normal
+        }
+        
+        g2.fillPolygon(arrow);
+        
+        g2.setColor(Color.BLACK);
+        g2.setStroke(new BasicStroke(1));
+        g2.drawPolygon(arrow);
+        
+        g2.setTransform(old);
     }
 
     private void drawLabels(Graphics2D g2) {
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("SansSerif", Font.BOLD, 12));
-        int towerY = 140; // Mesmo Y da torre
-        int lx = 312 - 120; int ly = towerY - 70;
+        int ly = TOWER_Y - 70;
+        int lx = TOWER_X - 120; 
+        
+        // OUTPUTS (O:)
         g2.drawString("O:2/00", lx, ly); g2.drawString("O:2/01", lx, ly + 35); g2.drawString("O:2/02", lx, ly + 70);
-        int rx = 312 + 70;
+        int rx = TOWER_X + 70;
         g2.drawString("O:2/04", rx, ly); g2.drawString("O:2/05", rx, ly + 35); g2.drawString("O:2/06", rx, ly + 70);
+        
+        // INPUTS (I:1/xx) - Labels dos botões de pedestre
         g2.drawString("I:1/00", 200, 360); g2.drawString("I:1/01", 390, 360);
     }
 }

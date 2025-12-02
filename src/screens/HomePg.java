@@ -936,8 +936,22 @@ public final class HomePg extends javax.swing.JFrame {
         setCurrentScene(selectedScene);
     }// GEN-LAST:event_simulationsComboBoxActionPerformed
 
-    private void startBtActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_startBtActionPerformed
+    private void startBtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startBtActionPerformed
         if (!HomePageModel.isRunning()) {
+            
+            // 1. Limpa a memória lógica (Backend)
+            HomePageModel.setMemoryVariables(new HashMap<>());
+            
+            // 2. Reseta as saídas (Q)
+            HomePageModel.setOutputs(OutputActions.resetOutputs(HomePageModel.getOutputs()));
+            
+            // 3. LIMPEZA VISUAL (O SEGREDO ESTÁ AQUI)
+            clearMemoryLabels(); // <--- Limpa os números antigos da tela
+            
+            // 4. Atualiza a tela (vai mostrar tudo vazio inicialmente)
+            updateMemoryVariables(); 
+            updateSceneUI();
+
             HomePageModel.setMode(ExecutionMode.RUNNING);
 
             Timer timer = new Timer(CYCLE_DELAY_MS, e -> controller.runCycle(e));
@@ -950,7 +964,7 @@ public final class HomePg extends javax.swing.JFrame {
             updateMemoryVariables();
             updateMode();
         }
-    }// GEN-LAST:event_startBtActionPerformed
+    }//GEN-LAST:event_startBtActionPerformed
 
     public void clickPauseButton() {
         pauseBt.doClick();
@@ -1000,6 +1014,28 @@ public final class HomePg extends javax.swing.JFrame {
 
         Sobre_BT.setText(Language.getSobre());
         Help_BT.setText(Language.getAjudar());
+    }
+    // Método para limpar visualmente todos os textos dos relógios
+    private void clearMemoryLabels() {
+        // Listas de todos os Labels da tela
+        JLabel[] tCur = {Temp_atual_1, Temp_atual_2, Temp_atual_3, Temp_atual_4, Temp_atual_5, Temp_atual_6, Temp_atual_7, Temp_atual_8, Temp_atual_9, Temp_atual_10};
+        JLabel[] tPre = {Temp_parada_1, Temp_parada_2, Temp_parada_3, Temp_parada_4, Temp_parada_5, Temp_parada_6, Temp_parada_7, Temp_parada_8, Temp_parada_9, Temp_parada_10};
+        JLabel[] tName = {Timer_1, Timer_2, Timer_3, Timer_4, Timer_5, Timer_6, Timer_7, Timer_8, Timer_9, Timer_10};
+
+        JLabel[] cCur = {Contagem_atual_1, Contagem_atual_2, Contagem_atual_3, Contagem_atual_4, Contagem_atual_5, Contagem_atual_6, Contagem_atual_7, Contagem_atual_8, Contagem_atual_9, Contagem_atual_10};
+        JLabel[] cPre = {Contagem_parada_1, Contagem_parada_2, Contagem_parada_3, Contagem_parada_4, Contagem_parada_5, Contagem_parada_6, Contagem_parada_7, Contagem_parada_8, Contagem_parada_9, Contagem_parada_10};
+        JLabel[] cName = {Contador_1, Contador_2, Contador_3, Contador_4, Contador_5, Contador_6, Contador_7, Contador_8, Contador_9, Contador_10};
+
+        // Apaga o texto de todos
+        for (int i = 0; i < 10; i++) {
+            tCur[i].setText(""); 
+            tPre[i].setText(""); 
+            tName[i].setText(""); // Limpa o nome (ex: T1)
+            
+            cCur[i].setText(""); 
+            cPre[i].setText(""); 
+            cName[i].setText(""); // Limpa o nome (ex: C1)
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
