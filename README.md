@@ -86,7 +86,6 @@ O compilador suporta as instruções básicas da norma IEC 61131-3:
 ## ▶️ Como Executar
 
 1.  Baixe o arquivo `Instalador_Simulador_CLP.exe`
----´
 
 2.  Atualize seu jdk para versão igual ou acima a 23
 ---
