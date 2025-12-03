@@ -86,7 +86,11 @@ O compilador suporta as instruções básicas da norma IEC 61131-3:
 ## ▶️ Como Executar
 
 1.  Baixe o arquivo `Instalador_Simulador_CLP.exe`
+---´
+
+2.  Atualize seu jdk para versão igual ou acima a 23
 ---
+
 
 ## 📚 Referências e Créditos
 
@@ -97,20 +101,6 @@ Inspirado no software **LogixPro Simulator**.
 _______________________________________________________
 
 
-ultikmas tarefas
-
-colocar outro video de explicação pro robson
-
-
-colocar essas imagens
-
-### Tela Principal
-![Interface Principal](./docs/home_preview.png)
-*Interface principal com editor de código e painel de simulação.*
-
-### Nova Simulação: Semáforo
-![Semáforo](./docs/traffic_light_preview.png)
-*Novo cenário implementado para controle de tráfego.*
 
 
 
