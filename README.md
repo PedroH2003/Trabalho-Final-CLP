@@ -75,16 +75,16 @@ O compilador suporta as instruções básicas da norma IEC 61131-3:
 ## 🎨 Interface do Usuário
 
 ### 📄 Relatório Técnico e Manual
-[![Interface Principal]](https://github.com/PedroH2003/Trabalho-Final-CLP/blob/main/Relat%C3%B3rio%20-%20SIMULADOR%20DE%20CLP%20-%20Sem%C3%A1foro.pdf)
+[[**Interface Principal**]](https://github.com/PedroH2003/Trabalho-Final-CLP/blob/main/Relat%C3%B3rio%20-%20SIMULADOR%20DE%20CLP%20-%20Sem%C3%A1foro.pdf)
 *Clique na imagem acima para acessar o PDF completo com o relatório e manual.*
 
 ### 🎥 Demonstração: Simulação de Semáforo
-[![Nova Simulação: Semáforo]](https://www.youtube.com/watch?v=Y22ag0oGnH0)
+[[**Nova Simulação: Semáforo**]](https://www.youtube.com/watch?v=Y22ag0oGnH0)
 *Clique na imagem para assistir ao vídeo da simulação de tráfego funcionando.*
 
 ### 💾 Download do Software
 [**📥 Baixar Instalador_Simulador_CLP.exe**](https://github.com/PedroH2003/Trabalho-Final-CLP/blob/main/Instalador_Simulador_CLP.exe)
-*Clique no link acima e, na página do GitHub, procure o botão de download (ícone 📥) para baixar o instalador para Windows.*
+*Clique no link acima e, na página do GitHub, procure o botão de download (ícone [...]) para baixar o instalador para Windows.*
 
 ---
 
