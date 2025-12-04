@@ -73,13 +73,13 @@ O compilador suporta as instruções básicas da norma IEC 61131-3:
 
 ## 🎨 Interface do Usuário
 
-### Tela Principal
-![Interface Principal](./docs/home_preview.png)
-*Interface principal com editor de código e painel de simulação.*
+### 📄 Relatório Técnico e Manual
+[![Interface Principal](./docs/home_preview.png)](https://github.com/PedroH2003/Trabalho-Final-CLP/blob/main/Relat%C3%B3rio%20-%20SIMULADOR%20DE%20CLP%20-%20Sem%C3%A1foro.pdf)
+*Clique na imagem acima para acessar o PDF completo com o relatório e manual.*
 
-### Nova Simulação: Semáforo
-![Semáforo](./docs/traffic_light_preview.png)
-*Novo cenário implementado para controle de tráfego.*
+### 🎥 Demonstração: Simulação de Semáforo
+[![Nova Simulação: Semáforo](./docs/traffic_light_preview.png)](https://www.youtube.com/watch?v=Y22ag0oGnH0)
+*Clique na imagem para assistir ao vídeo da simulação de tráfego funcionando.*
 
 ---
 
