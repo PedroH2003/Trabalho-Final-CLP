@@ -63,6 +63,7 @@ O compilador suporta as instruções básicas da norma IEC 61131-3:
 *   🛠️ **PROGRAM:** Edição livre do código.
 *   ⏸️ **STOP:** Sistema parado, saídas resetadas.
 *   ▶️ **RUN:** Execução cíclica do programa (Scan Cycle).
+*   🔄 **RESET:** Reinicia a simulação, limpa a memória e reseta os contadores/temporizadores.
 
 ### ✅ Cenários de Simulação
 1.  **Painel Padrão:** Botões e LEDs genéricos para testes lógicos.
